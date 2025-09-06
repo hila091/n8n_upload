@@ -1,0 +1,474 @@
+{
+  "name": "n8n_final _project_B",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Create a greeting for a friend!",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "what's your name?",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "what's your friend's name?",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "What is your friend's gender?",
+              "fieldType": "radio",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": " male"
+                  },
+                  {
+                    "option": "female"
+                  },
+                  {
+                    "option": "other"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "What topics interest your friend?",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "What is your friend's email?",
+              "fieldType": "email",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        32,
+        -384
+      ],
+      "id": "b39783b7-afba-48bf-a98f-29629947d8b5",
+      "name": "On form submission",
+      "webhookId": "275b00c1-dc86-40f2-bc21-1959ccb93553"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json['what\\'s your name?'] }}{{ $json['what\\'s your friend\\'s name?'] }}{{ $json['What is your friend\\'s gender?'] }}{{ $json['What topics interest your friend?'] }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=##ROLE: אתה כותב כרטיסי ברכה יצירתיים עם חרוזים ##TASK: לכתוב שיר קצר המשלב את תחומי העיניין הבאים {{ $json['What topics interest your friend?'] }} ##DETAIL: ציין בתחילת החמשיר את מוען המכתב שהוא {{ $json['what\\'s your name?'] }} בסוף החמשיר ציין את הנמען שהוא {{ $json['what\\'s your friend\\'s name?'] }} אם בשלב כלשהו במכתב אתה פונה למוען, תחוייב להשתמש בלשון {{ $json['What is your friend\\'s gender?'] }} אם המגדר שלו הוא לא גבר או אישה, תימנע מלהשתמש בנוסח המזכיר את מגדרו"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        240,
+        -224
+      ],
+      "id": "28a6ed2a-cb28-4800-afdc-6234054a6bfc",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        240,
+        -64
+      ],
+      "id": "f1182c15-e54a-423f-afbd-d78d31c85601",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "gZSd8d6MioLAm0MU",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combineBySql",
+        "numberInputs": 3,
+        "query": "SELECT *\nFROM input1\nLEFT JOIN input2\n  ON input1.name = input2.id\nLEFT JOIN input3\n  ON input1.name = input3.person;",
+        "options": {
+          "emptyQueryResult": "empty"
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        560,
+        -400
+      ],
+      "id": "b673faef-f36b-4379-8f79-8e3bc3ff5f7e",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appn6SywYSpE4kMwq",
+          "mode": "list",
+          "cachedResultName": "Untitled Base",
+          "cachedResultUrl": "https://airtable.com/appn6SywYSpE4kMwq"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblR1ZQ0UvXHjYMKV",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appn6SywYSpE4kMwq/tblR1ZQ0UvXHjYMKV"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Sender Name": "={{ $json['what\\'s your name?'] }}",
+            "Recipient Name": "={{ $json['what\\'s your friend\\'s name?'] }}",
+            "Recipient Gender": "={{ $json['What is your friend\\'s gender?'] }}",
+            "Recipient Interests": "={{ $json['What topics interest your friend?'] }}",
+            "Blessing Text": "={{ $('Basic LLM Chain').item.json.text }}",
+            "Recipient Email": "={{ $json['What is your friend\\'s email?'] }}",
+            "image url": "={{ $json.content.download_url }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Recipient Name",
+              "displayName": "Recipient Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Sender Name",
+              "displayName": "Sender Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Recipient Gender",
+              "displayName": "Recipient Gender",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Recipient Interests",
+              "displayName": "Recipient Interests",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Blessing Text",
+              "displayName": "Blessing Text",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Recipient Email",
+              "displayName": "Recipient Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "image url",
+              "displayName": "image url",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        720,
+        -384
+      ],
+      "id": "c82e5175-b726-4072-b43d-321c0c18ecc6",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "9YOlNQ94YlbzOFSJ",
+          "name": "Airtable Personal Access Token account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "subject": "AI N8N Greeting Gift",
+        "textContent": "=Cover image:\n{{ $json.fields['image url'] }}\nYour ai greeting:\n{{ $json.fields['Blessing Text'] }}",
+        "sender": "=hillaikro@gmail.com",
+        "receipients": "=hillaikro@gmail.com",
+        "additionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.sendInBlue",
+      "typeVersion": 1,
+      "position": [
+        880,
+        -384
+      ],
+      "id": "593d388b-1195-428f-a996-c99d22c608c7",
+      "name": "Send a transactional email",
+      "credentials": {
+        "sendInBlueApi": {
+          "id": "6vPrbKGrBCPTOh4I",
+          "name": "Brevo account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "=your greeting was sent successfully.",
+        "completionMessage": "=Greeting send:\n\n{{ $('Create a record').item.json.fields['Blessing Text'] }}\n\nsend to  {{ $('Create a record').item.json.fields['Recipient Email'] }}\n\nHis cover image:\n{{ $('Create a record').item.json.fields['image url'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        1040,
+        -384
+      ],
+      "id": "1503d172-501c-4915-b454-c499640a8612",
+      "name": "Form",
+      "webhookId": "c4033ba0-8afd-40fe-88eb-7e78b813d52a"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.0-flash-exp-image-generation",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.0-flash-exp-image-generation"
+        },
+        "prompt": "=Create an image that has {{ $json['What is your friend\\'s gender?'] }} who is interested in the following things {{ $json['What topics interest your friend?'] }} \nMake it look magical and make sure all the areas of interest I mentioned are included in the picture.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -560
+      ],
+      "id": "253dcf03-5e74-4d8c-a121-9a563a37f6d7",
+      "name": "Generate an image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "matA7GImRBn0rND1",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "זה עבד לי גם בלי קשר להמרה ל64 זה נתן פלט זהה וכשעשיתי את ההמרה בכל זאת זה לא עבד אז הורדתי את החלק עם ההמרה מקווה שזה בסדר",
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        288,
+        -736
+      ],
+      "typeVersion": 1,
+      "id": "7f5d6c7c-5b61-435c-a74c-cd3b47ab6581",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "value": "https://github.com/hila091/n8n_upload",
+          "mode": "url"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n_upload",
+          "mode": "list",
+          "cachedResultName": "n8n_upload",
+          "cachedResultUrl": "https://github.com/hila091/n8n_upload"
+        },
+        "filePath": "={{Date.now()}}.png",
+        "binaryData": true,
+        "commitMessage": "aab"
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        384,
+        -560
+      ],
+      "id": "0a45d09b-c262-43ae-9fad-1020d19ade4a",
+      "name": "Create a file",
+      "webhookId": "2e5eec9b-9df6-437d-9539-59a222f3f56f",
+      "credentials": {
+        "githubApi": {
+          "id": "2iKjFUBJSiQhTe9d",
+          "name": "GitHub account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate an image",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a record": {
+      "main": [
+        [
+          {
+            "node": "Send a transactional email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a transactional email": {
+      "main": [
+        [
+          {
+            "node": "Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image": {
+      "main": [
+        [
+          {
+            "node": "Create a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a file": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "eb8c2ec9-0dfe-4a5c-b562-138034ed1965",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "75056bea1653a2121c6c163515de9c8953b39e5d18c59dd7a22c3a5a5594864c"
+  },
+  "id": "RLxRgP0iqpnus3TS",
+  "tags": []
+}
